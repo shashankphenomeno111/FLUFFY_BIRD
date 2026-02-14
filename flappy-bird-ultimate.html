@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird Ultimate ✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        #gameContainer {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        #canvasWrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        canvas {
+            border-radius: 20px;
+            display: block;
+            box-shadow:
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        #info {
+            margin-top: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        #info b {
+            color: #ffd700;
+        }
+
+        /* GLASSMORPHISM MENU - Fixed positioning */
+        #menuBox {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 25px 35px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #fff;
+            text-align: center;
+            width: 360px;
+            max-height: 90%;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: menuSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes menuSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8) translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) translateY(0);
+            }
+        }
+
+        #menuBox h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #ffd700 0%, #ff6b6b 50%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleShine 3s ease-in-out infinite;
+        }
+
+        @keyframes titleShine {
+
+            0%,
+            100% {
+                filter: brightness(1);
+            }
+
+            50% {
+                filter: brightness(1.3);
+            }
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 14px;
+            border: none;
+            font-size: 13px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .small-btn {
+            font-size: 11px;
+            padding: 6px 12px;
+        }
+
+        .active-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            border-color: transparent;
+        }
+
+        .start-btn {
+            margin-top: 15px;
+            padding: 12px 35px;
+            font-size: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            box-shadow: 0 4px 20px rgba(56, 239, 125, 0.3);
+            border: none;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 20px rgba(56, 239, 125, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 4px 30px rgba(56, 239, 125, 0.6);
+            }
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
+            box-shadow: 0 8px 30px rgba(56, 239, 125, 0.5);
+        }
+
+        .night-on {
+            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+        }
+
+        .controls-hint {
+            font-size: 10px;
+            margin-top: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.5;
+        }
+
+        .controls-hint kbd {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Outfit', sans-serif;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 9px;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .score-badge {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+        .score-badge span {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        /* Volume Control Styles */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ff9500);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ff9500);
+            cursor: pointer;
+            border: none;
+        }
+
+        .volume-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            min-width: 60px;
+            text-align: left;
+        }
+
+        .sound-toggles {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .sound-toggle {
+            font-size: 10px;
+            padding: 5px 10px;
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        /* Custom Music Upload */
+        .upload-section {
+            margin-top: 10px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            font-size: 11px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        .upload-btn:hover {
+            background: linear-gradient(135deg, #feca57 0%, #ff6b6b 100%);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-name {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 6px;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-name.has-file {
+            color: #4ade80;
+        }
+
+        .clear-music-btn {
+            font-size: 9px;
+            padding: 4px 8px;
+            margin-left: 6px;
+            background: rgba(255, 100, 100, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <div id="gameContainer">
+        <div id="canvasWrapper">
+            <!-- MENU SCREEN -->
+            <div id="menuBox">
+                <h2>🐤 Flappy Bird</h2>
+                <p class="subtitle">Ultimate Edition</p>
+
+                <div class="score-display">
+                    <div class="score-badge">🏆 Best: <span id="menuHighScore">0</span></div>
+                </div>
+
+                <div class="section-title">Difficulty</div>
+                <div class="btn-group">
+                    <button id="btn-easy" onclick="selectDifficulty('easy')">🟢 Easy</button>
+                    <button id="btn-medium" onclick="selectDifficulty('medium')">🟡 Medium</button>
+                    <button id="btn-hard" onclick="selectDifficulty('hard')">🔴 Hard</button>
+                </div>
+
+                <div class="section-title">Bird Skin</div>
+                <div class="btn-group">
+                    <button id="skin-yellow" class="small-btn" onclick="selectSkin('yellow')">🐤 Golden</button>
+                    <button id="skin-blue" class="small-btn" onclick="selectSkin('blue')">🐦 Azure</button>
+                    <button id="skin-red" class="small-btn" onclick="selectSkin('red')">🔥 Phoenix</button>
+                    <button id="skin-rainbow" class="small-btn" onclick="selectSkin('rainbow')">🌈 Rainbow</button>
+                </div>
+
+                <div class="section-title">Mode</div>
+                <div class="btn-group">
+                    <button id="night-toggle" class="small-btn" onclick="toggleNight()">🌞 Day Mode</button>
+                </div>
+
+                <div class="section-title">🔊 Sound Settings</div>
+                <div class="sound-toggles">
+                    <button id="music-toggle" class="small-btn sound-toggle" onclick="toggleMusic()">🎵 Music</button>
+                    <button id="sfx-toggle" class="small-btn sound-toggle" onclick="toggleSFX()">🔔 SFX</button>
+                </div>
+                <div class="volume-control">
+                    <span class="volume-label">🎵 Music</span>
+                    <input type="range" class="volume-slider" id="musicVolume" min="0" max="100" value="30"
+                        oninput="setMusicVolume(this.value)">
+                </div>
+                <div class="volume-control">
+                    <span class="volume-label">🔔 Effects</span>
+                    <input type="range" class="volume-slider" id="sfxVolume" min="0" max="100" value="50"
+                        oninput="setSFXVolume(this.value)">
+                </div>
+
+                <div class="section-title">🎧 Custom Music</div>
+                <div class="upload-section">
+                    <input type="file" id="musicUpload" class="file-input" accept="audio/*"
+                        onchange="handleMusicUpload(event)">
+                    <button class="upload-btn" onclick="document.getElementById('musicUpload').click()">
+                        📁 Upload Your Song
+                    </button>
+                    <div class="file-name" id="fileName">No custom music selected</div>
+                </div>
+                <div class="volume-control" style="margin-top: 4px;">
+                    <button class="small-btn clear-music-btn" onclick="clearCustomMusic()" id="clearMusicBtn"
+                        style="display:none;">❌ Use Default</button>
+                </div>
+
+                <button class="start-btn" onclick="startGame()">▶ START GAME</button>
+
+                <p class="controls-hint">
+                    <kbd>SPACE</kbd> / <kbd>CLICK</kbd> jump · <kbd>N</kbd> night · <kbd>M</kbd> mute music
+                </p>
+            </div>
+
+            <canvas id="gameCanvas" width="420" height="640"></canvas>
+        </div>
+        <div id="info">
+            Press <b>SPACE</b> or click to jump · <b>N</b> night mode · <b>M</b> mute music ✨
+        </div>
+    </div>
+
+    <script>
+        // ============ AUDIO SYSTEM ============
+        const AudioSystem = {
+            ctx: null,
+            musicEnabled: true,
+            sfxEnabled: true,
+            musicVolume: 0.3,
+            sfxVolume: 0.5,
+            musicInterval: null,
+            customMusic: null,  // HTML Audio element for custom music
+            hasCustomMusic: false,
+            currentNotes: [],
+
+            init() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+
+            resume() {
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            // Create oscillator for sounds
+            createOsc(type, freq, duration, volume = 1) {
+                if (!this.ctx) this.init();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+                gain.gain.setValueAtTime(volume * this.sfxVolume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+
+                return { osc, gain };
+            },
+
+            // Jump sound - quick chirp
+            playJump() {
+                if (!this.sfxEnabled) return;
+                this.resume();
+
+                const freq = 600 + Math.random() * 100;
+                this.createOsc('sine', freq, 0.1, 0.4);
+                setTimeout(() => this.createOsc('sine', freq * 1.3, 0.08, 0.3), 30);
+            },
+
+            // Coin collect - happy arpeggio
+            playCoin() {
+                if (!this.sfxEnabled) return;
+                this.resume();
+
+                const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.createOsc('sine', freq, 0.15, 0.35), i * 50);
+                });
+            },
+
+            // Score point - short blip
+            playScore() {
+                if (!this.sfxEnabled) return;
+                this.resume();
+
+                this.createOsc('square', 880, 0.05, 0.2);
+                setTimeout(() => this.createOsc('square', 1100, 0.08, 0.15), 40);
+            },
+
+            // Game over - sad descending
+            playGameOver() {
+                if (!this.sfxEnabled) return;
+                this.resume();
+
+                const notes = [440, 392, 349, 330, 294, 262];
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.createOsc('sawtooth', freq, 0.2, 0.25), i * 100);
+                });
+            },
+
+            // Power up sound
+            playPowerUp() {
+                if (!this.sfxEnabled) return;
+                this.resume();
+
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => this.createOsc('sine', 400 + i * 100, 0.1, 0.25), i * 40);
+                }
+            },
+
+            // Background music - plays custom or default
+            startMusic() {
+                if (!this.musicEnabled) return;
+
+                // If custom music exists, play it
+                if (this.hasCustomMusic && this.customMusic) {
+                    this.customMusic.volume = this.musicVolume;
+                    this.customMusic.loop = true;
+                    this.customMusic.play().catch(e => console.log('Audio play failed:', e));
+                    return;
+                }
+
+                // Otherwise play generated melody
+                if (this.musicInterval) return;
+                if (!this.ctx) this.init();
+                this.resume();
+
+                const melody = [
+                    { note: 392, dur: 0.3 }, { note: 440, dur: 0.3 },
+                    { note: 523, dur: 0.3 }, { note: 587, dur: 0.3 },
+                    { note: 523, dur: 0.3 }, { note: 440, dur: 0.3 },
+                    { note: 392, dur: 0.6 }, { note: 0, dur: 0.3 },
+                    { note: 523, dur: 0.3 }, { note: 587, dur: 0.3 },
+                    { note: 659, dur: 0.3 }, { note: 587, dur: 0.3 },
+                    { note: 523, dur: 0.3 }, { note: 440, dur: 0.3 },
+                    { note: 392, dur: 0.6 }, { note: 0, dur: 0.3 },
+                ];
+
+                let noteIndex = 0;
+                const playNote = () => {
+                    if (!this.musicEnabled) return;
+                    const n = melody[noteIndex];
+                    if (n.note > 0) {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(n.note, this.ctx.currentTime);
+                        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                        gain.gain.linearRampToValueAtTime(this.musicVolume * 0.3, this.ctx.currentTime + 0.05);
+                        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + n.dur);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start();
+                        osc.stop(this.ctx.currentTime + n.dur);
+                    }
+                    noteIndex = (noteIndex + 1) % melody.length;
+                    this.musicInterval = setTimeout(playNote, n.dur * 1000);
+                };
+                playNote();
+            },
+
+            stopMusic() {
+                if (this.musicInterval) {
+                    clearTimeout(this.musicInterval);
+                    this.musicInterval = null;
+                }
+                if (this.customMusic) {
+                    this.customMusic.pause();
+                    this.customMusic.currentTime = 0;
+                }
+            },
+
+            setMusicVolume(vol) {
+                this.musicVolume = vol;
+                if (this.customMusic) {
+                    this.customMusic.volume = vol;
+                }
+            },
+
+            setSFXVolume(vol) {
+                this.sfxVolume = vol;
+            },
+
+            setCustomMusic(audioElement) {
+                this.customMusic = audioElement;
+                this.hasCustomMusic = true;
+            },
+
+            clearCustomMusic() {
+                if (this.customMusic) {
+                    this.customMusic.pause();
+                    this.customMusic = null;
+                }
+                this.hasCustomMusic = false;
+            }
+        };
+
+        // Handle custom music file upload
+        function handleMusicUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileNameEl = document.getElementById('fileName');
+            const clearBtn = document.getElementById('clearMusicBtn');
+
+            // Create audio element from file
+            const audio = new Audio();
+            audio.src = URL.createObjectURL(file);
+
+            AudioSystem.setCustomMusic(audio);
+
+            fileNameEl.textContent = '🎵 ' + file.name;
+            fileNameEl.classList.add('has-file');
+            clearBtn.style.display = 'inline-block';
+        }
+
+        function clearCustomMusic() {
+            AudioSystem.clearCustomMusic();
+            document.getElementById('fileName').textContent = 'No custom music selected';
+            document.getElementById('fileName').classList.remove('has-file');
+            document.getElementById('clearMusicBtn').style.display = 'none';
+            document.getElementById('musicUpload').value = '';
+        }
+
+        // Sound control functions
+        function toggleMusic() {
+            AudioSystem.musicEnabled = !AudioSystem.musicEnabled;
+            const btn = document.getElementById('music-toggle');
+            if (AudioSystem.musicEnabled) {
+                btn.classList.remove('muted');
+                btn.textContent = '🎵 Music';
+                if (gameState === 'playing') AudioSystem.startMusic();
+            } else {
+                btn.classList.add('muted');
+                btn.textContent = '🎵 Music';
+                AudioSystem.stopMusic();
+            }
+        }
+
+        function toggleSFX() {
+            AudioSystem.sfxEnabled = !AudioSystem.sfxEnabled;
+            const btn = document.getElementById('sfx-toggle');
+            if (AudioSystem.sfxEnabled) {
+                btn.classList.remove('muted');
+                btn.textContent = '🔔 SFX';
+            } else {
+                btn.classList.add('muted');
+                btn.textContent = '🔔 SFX';
+            }
+        }
+
+        function setMusicVolume(val) {
+            AudioSystem.setMusicVolume(val / 100);
+        }
+
+        function setSFXVolume(val) {
+            AudioSystem.setSFXVolume(val / 100);
+        }
+
+        // Create background particles
+        const bgParticles = document.getElementById('bgParticles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+            bgParticles.appendChild(particle);
+        }
+
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const WIDTH = canvas.width;
+        const HEIGHT = canvas.height;
+
+        // --------- ENHANCED BIRD SKINS ----------
+        const birdSkins = {
+            yellow: { body: "#ffd700", wing: "#ff9500", beak: "#ff6b35", eye: "#1a1a2e", glow: "rgba(255, 215, 0, 0.4)" },
+            blue: { body: "#4facfe", wing: "#00f2fe", beak: "#ffb74d", eye: "#1a1a2e", glow: "rgba(79, 172, 254, 0.4)" },
+            red: { body: "#ff6b6b", wing: "#ee5a24", beak: "#ffd700", eye: "#1a1a2e", glow: "rgba(255, 107, 107, 0.4)" },
+            rainbow: { body: "rainbow", wing: "rainbow", beak: "#ff6b35", eye: "#1a1a2e", glow: "rgba(255, 255, 255, 0.4)" }
+        };
+        let currentSkinName = "yellow";
+        let currentSkin = birdSkins.yellow;
+
+        // Bird properties
+        const bird = {
+            x: 90,
+            y: HEIGHT / 2,
+            radius: 18,
+            velocity: 0,
+            gravity: 0.35,
+            jumpStrength: -8,
+            rotation: 0,
+            trail: []
+        };
+
+        // Difficulty settings - jumpStrength: lower = gentler jump
+        const difficulties = {
+            easy: { gravity: 0.25, pipeSpeed: 2.0, gap: 190, jumpStrength: -5.5 },
+            medium: { gravity: 0.32, pipeSpeed: 2.6, gap: 160, jumpStrength: -6.5 },
+            hard: { gravity: 0.42, pipeSpeed: 3.2, gap: 130, jumpStrength: -8 }
+        };
+        let currentDifficultyName = "easy";
+        let currentDifficulty = difficulties.easy;
+
+        // Pipes
+        const pipeWidth = 65;
+        let pipeGap = currentDifficulty.gap;
+        let basePipeSpeed = currentDifficulty.pipeSpeed;
+        const pipes = [];
+
+        // Background layers (parallax)
+        const mountains = [];
+        const clouds = [];
+        const stars = [];
+
+        // Coins / power-ups
+        const coins = [];
+        let powerTimer = 0;
+
+        // Particles
+        const particles = [];
+        const scorePopups = [];
+
+        // Score
+        let score = 0;
+        let highScore = 0;
+
+        // Game state
+        let gameState = "menu";
+        let screenShake = 0;
+
+        // Night mode
+        let isNight = false;
+
+        // Animation time
+        let gameTime = 0;
+
+        // Load high score
+        (function loadHighScore() {
+            const saved = localStorage.getItem("flappyUltimateHighScore");
+            if (saved !== null) {
+                highScore = parseInt(saved, 10) || 0;
+                document.getElementById("menuHighScore").textContent = highScore;
+            }
+        })();
+
+        // Initialize background elements
+        function initBackground() {
+            mountains.length = 0;
+            clouds.length = 0;
+            stars.length = 0;
+
+            for (let i = 0; i < 6; i++) {
+                mountains.push({
+                    x: i * 150 - 50,
+                    height: 60 + Math.random() * 80,
+                    width: 100 + Math.random() * 100,
+                    speed: 0.3
+                });
+            }
+
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * WIDTH,
+                    y: 30 + Math.random() * 150,
+                    width: 50 + Math.random() * 60,
+                    height: 20 + Math.random() * 15,
+                    speed: 0.2 + Math.random() * 0.3,
+                    opacity: 0.6 + Math.random() * 0.4
+                });
+            }
+
+            for (let i = 0; i < 60; i++) {
+                stars.push({
+                    x: Math.random() * WIDTH,
+                    y: Math.random() * (HEIGHT - 100),
+                    size: 1 + Math.random() * 2,
+                    twinkle: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function selectDifficulty(name) {
+            currentDifficultyName = name;
+            currentDifficulty = difficulties[name];
+
+            document.querySelectorAll('[id^="btn-"]').forEach(b => b.classList.remove("active-btn"));
+            document.getElementById("btn-" + name).classList.add("active-btn");
+        }
+
+        function selectSkin(name) {
+            currentSkinName = name;
+            currentSkin = birdSkins[name];
+
+            document.querySelectorAll('[id^="skin-"]').forEach(b => b.classList.remove("active-btn"));
+            document.getElementById("skin-" + name).classList.add("active-btn");
+        }
+
+        function toggleNight() {
+            isNight = !isNight;
+            const btn = document.getElementById("night-toggle");
+            if (isNight) {
+                btn.textContent = "🌙 Night Mode";
+                btn.classList.add("night-on");
+            } else {
+                btn.textContent = "🌞 Day Mode";
+                btn.classList.remove("night-on");
+            }
+        }
+
+        function applyDifficulty() {
+            bird.gravity = currentDifficulty.gravity;
+            bird.jumpStrength = currentDifficulty.jumpStrength;
+            basePipeSpeed = currentDifficulty.pipeSpeed;
+            pipeGap = currentDifficulty.gap;
+        }
+
+        function startGame() {
+            AudioSystem.init();
+            AudioSystem.resume();
+            applyDifficulty();
+            resetGame();
+            gameState = "playing";
+            document.getElementById("menuBox").style.display = "none";
+            AudioSystem.startMusic();
+        }
+
+        function resetGame() {
+            bird.y = HEIGHT / 2;
+            bird.velocity = 0;
+            bird.rotation = 0;
+            bird.trail = [];
+            score = 0;
+            pipes.length = 0;
+            coins.length = 0;
+            particles.length = 0;
+            scorePopups.length = 0;
+            powerTimer = 0;
+            screenShake = 0;
+            createPipe();
+            initBackground();
+        }
+
+        function createPipe() {
+            const minHeight = 60;
+            const maxHeight = HEIGHT - pipeGap - 120;
+            const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+
+            const pipe = {
+                x: WIDTH,
+                topHeight: topHeight,
+                bottomY: topHeight + pipeGap,
+                passed: false
+            };
+            pipes.push(pipe);
+
+            if (Math.random() < 0.5) {
+                coins.push({
+                    x: WIDTH + pipeWidth / 2,
+                    y: topHeight + pipeGap / 2,
+                    radius: 12,
+                    collected: false,
+                    rotation: 0
+                });
+            }
+        }
+
+        function spawnParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    size: 3 + Math.random() * 4,
+                    color: color,
+                    life: 1.0
+                });
+            }
+        }
+
+        function spawnScorePopup(x, y, text, color = "#fff") {
+            scorePopups.push({
+                x: x,
+                y: y,
+                text: text,
+                color: color,
+                life: 1.0,
+                vy: -2
+            });
+        }
+
+        function updateBackground() {
+            const effectiveSpeed = basePipeSpeed * (powerTimer > 0 ? 0.6 : 1);
+
+            for (const m of mountains) {
+                m.x -= m.speed * effectiveSpeed;
+                if (m.x + m.width < 0) {
+                    m.x = WIDTH + Math.random() * 50;
+                    m.height = 60 + Math.random() * 80;
+                }
+            }
+
+            for (const c of clouds) {
+                c.x -= c.speed;
+                if (c.x + c.width < 0) {
+                    c.x = WIDTH + Math.random() * 50;
+                    c.y = 30 + Math.random() * 150;
+                }
+            }
+        }
+
+        function update() {
+            gameTime++;
+
+            if (gameState === "playing") {
+                const effectivePipeSpeed = basePipeSpeed * (powerTimer > 0 ? 0.6 : 1);
+
+                bird.trail.unshift({ x: bird.x, y: bird.y });
+                if (bird.trail.length > 8) bird.trail.pop();
+
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+                bird.rotation = Math.min(Math.max(bird.velocity * 3, -30), 70);
+
+                if (bird.y + bird.radius >= HEIGHT - 50) {
+                    bird.y = HEIGHT - 50 - bird.radius;
+                    gameOver();
+                }
+
+                if (bird.y - bird.radius <= 0) {
+                    bird.y = bird.radius;
+                    bird.velocity = 0;
+                }
+
+                for (let i = 0; i < pipes.length; i++) {
+                    const p = pipes[i];
+                    p.x -= effectivePipeSpeed;
+
+                    const withinX = bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + pipeWidth;
+                    const hitTop = bird.y - bird.radius < p.topHeight;
+                    const hitBottom = bird.y + bird.radius > p.bottomY;
+
+                    if (withinX && (hitTop || hitBottom)) {
+                        gameOver();
+                    }
+
+                    if (!p.passed && p.x + pipeWidth < bird.x) {
+                        p.passed = true;
+                        score++;
+                        spawnScorePopup(bird.x, bird.y - 40, "+1", "#4ade80");
+                        spawnParticles(bird.x, bird.y, "#4ade80", 5);
+                        AudioSystem.playScore();
+                    }
+                }
+
+                if (pipes.length > 0 && pipes[0].x + pipeWidth < 0) {
+                    pipes.shift();
+                }
+
+                if (pipes.length === 0 || pipes[pipes.length - 1].x < WIDTH - 220) {
+                    createPipe();
+                }
+
+                for (const coin of coins) {
+                    coin.x -= effectivePipeSpeed;
+                    coin.rotation += 0.1;
+                }
+
+                for (const coin of coins) {
+                    if (coin.collected) continue;
+                    const dx = bird.x - coin.x;
+                    const dy = bird.y - coin.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < bird.radius + coin.radius) {
+                        coin.collected = true;
+                        score += 3;
+                        powerTimer = 300;
+                        spawnScorePopup(coin.x, coin.y - 20, "+3 ⚡", "#ffd700");
+                        spawnParticles(coin.x, coin.y, "#ffd700", 15);
+                        AudioSystem.playCoin();
+                        AudioSystem.playPowerUp();
+                    }
+                }
+
+                while (coins.length > 0 && coins[0].x + coins[0].radius < 0) {
+                    coins.shift();
+                }
+
+                if (powerTimer > 0) powerTimer--;
+
+                updateBackground();
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2;
+                p.life -= 0.03;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            for (let i = scorePopups.length - 1; i >= 0; i--) {
+                const s = scorePopups[i];
+                s.y += s.vy;
+                s.life -= 0.02;
+                if (s.life <= 0) scorePopups.splice(i, 1);
+            }
+
+            if (screenShake > 0) screenShake *= 0.9;
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function getRainbowColor(offset = 0) {
+            const hue = (gameTime * 3 + offset) % 360;
+            return `hsl(${hue}, 80%, 60%)`;
+        }
+
+        function drawBackground() {
+            ctx.save();
+            if (screenShake > 0.5) {
+                ctx.translate(
+                    (Math.random() - 0.5) * screenShake,
+                    (Math.random() - 0.5) * screenShake
+                );
+            }
+
+            const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+            if (isNight) {
+                grad.addColorStop(0, "#0a0a1a");
+                grad.addColorStop(0.5, "#1a1a3e");
+                grad.addColorStop(1, "#2d1b4e");
+            } else {
+                grad.addColorStop(0, "#4facfe");
+                grad.addColorStop(0.5, "#00f2fe");
+                grad.addColorStop(1, "#a8edea");
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+            if (isNight) {
+                for (const star of stars) {
+                    const twinkle = Math.sin(gameTime * 0.05 + star.twinkle) * 0.5 + 0.5;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size * twinkle, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + twinkle * 0.7})`;
+                    ctx.fill();
+                }
+
+                ctx.beginPath();
+                ctx.arc(WIDTH - 60, 60, 30, 0, Math.PI * 2);
+                ctx.fillStyle = "#f5f5dc";
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(WIDTH - 50, 55, 25, 0, Math.PI * 2);
+                ctx.fillStyle = "#0a0a1a";
+                ctx.fill();
+            } else {
+                const sunGlow = ctx.createRadialGradient(350, 60, 0, 350, 60, 60);
+                sunGlow.addColorStop(0, "rgba(255, 200, 50, 0.8)");
+                sunGlow.addColorStop(1, "rgba(255, 200, 50, 0)");
+                ctx.fillStyle = sunGlow;
+                ctx.fillRect(290, 0, 120, 120);
+
+                ctx.beginPath();
+                ctx.arc(350, 60, 25, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffd700";
+                ctx.fill();
+            }
+
+            for (const c of clouds) {
+                ctx.fillStyle = isNight
+                    ? `rgba(100, 100, 150, ${c.opacity * 0.5})`
+                    : `rgba(255, 255, 255, ${c.opacity})`;
+                ctx.beginPath();
+                ctx.ellipse(c.x, c.y, c.width / 2, c.height / 2, 0, 0, Math.PI * 2);
+                ctx.ellipse(c.x - c.width * 0.3, c.y + 5, c.width / 3, c.height / 2.5, 0, 0, Math.PI * 2);
+                ctx.ellipse(c.x + c.width * 0.3, c.y + 5, c.width / 3, c.height / 2.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (const m of mountains) {
+                ctx.fillStyle = isNight ? "#1a1a3e" : "#90cdf4";
+                ctx.beginPath();
+                ctx.moveTo(m.x, HEIGHT - 50);
+                ctx.lineTo(m.x + m.width / 2, HEIGHT - 50 - m.height);
+                ctx.lineTo(m.x + m.width, HEIGHT - 50);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            const groundGrad = ctx.createLinearGradient(0, HEIGHT - 50, 0, HEIGHT);
+            if (isNight) {
+                groundGrad.addColorStop(0, "#2d3436");
+                groundGrad.addColorStop(1, "#1a1a2e");
+            } else {
+                groundGrad.addColorStop(0, "#8bc34a");
+                groundGrad.addColorStop(1, "#689f38");
+            }
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, HEIGHT - 50, WIDTH, 50);
+
+            ctx.strokeStyle = isNight ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+            ctx.lineWidth = 2;
+            for (let i = 0; i < WIDTH; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i - (gameTime % 20), HEIGHT - 50);
+                ctx.lineTo(i - (gameTime % 20), HEIGHT - 45);
+                ctx.stroke();
+            }
+            ctx.lineWidth = 1;
+        }
+
+        function drawBird() {
+            for (let i = 0; i < bird.trail.length; i++) {
+                const t = bird.trail[i];
+                const alpha = (1 - i / bird.trail.length) * 0.4;
+                const size = bird.radius * (1 - i / bird.trail.length);
+
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = currentSkinName === 'rainbow'
+                    ? `hsla(${(gameTime * 3 - i * 20) % 360}, 80%, 60%, ${alpha})`
+                    : currentSkin.glow.replace('0.4', alpha.toString());
+                ctx.fill();
+            }
+
+            ctx.save();
+            ctx.translate(bird.x, bird.y);
+            ctx.rotate(bird.rotation * Math.PI / 180);
+
+            const flap = Math.sin(gameTime / 6) * 5;
+
+            const glowSize = bird.radius + 8 + Math.sin(gameTime / 10) * 3;
+            ctx.beginPath();
+            ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+            ctx.fillStyle = currentSkinName === 'rainbow'
+                ? `hsla(${gameTime * 3 % 360}, 80%, 60%, 0.3)`
+                : currentSkin.glow;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
+            if (currentSkinName === 'rainbow') {
+                const bodyGrad = ctx.createLinearGradient(-bird.radius, -bird.radius, bird.radius, bird.radius);
+                bodyGrad.addColorStop(0, getRainbowColor(0));
+                bodyGrad.addColorStop(0.5, getRainbowColor(60));
+                bodyGrad.addColorStop(1, getRainbowColor(120));
+                ctx.fillStyle = bodyGrad;
+            } else {
+                ctx.fillStyle = currentSkin.body;
+            }
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(-3, 5, bird.radius * 0.6, bird.radius * 0.4, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(-5, flap / 2, bird.radius / 1.4, bird.radius / 2, Math.PI / 8, 0, Math.PI * 2);
+            if (currentSkinName === 'rainbow') {
+                ctx.fillStyle = getRainbowColor(90);
+            } else {
+                ctx.fillStyle = currentSkin.wing;
+            }
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(8, -5, 6, 7, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(10, -4, 3, 0, Math.PI * 2);
+            ctx.fillStyle = currentSkin.eye;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(11, -6, 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(bird.radius - 2, 2);
+            ctx.lineTo(bird.radius + 12, 0);
+            ctx.lineTo(bird.radius - 2, 6);
+            ctx.closePath();
+            ctx.fillStyle = currentSkin.beak;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawPipes() {
+            for (const p of pipes) {
+                const pipeGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+                pipeGrad.addColorStop(0, isNight ? "#1e5128" : "#4ade80");
+                pipeGrad.addColorStop(0.3, isNight ? "#3a7d44" : "#86efac");
+                pipeGrad.addColorStop(0.7, isNight ? "#3a7d44" : "#86efac");
+                pipeGrad.addColorStop(1, isNight ? "#1e5128" : "#22c55e");
+
+                ctx.fillStyle = pipeGrad;
+                ctx.fillRect(p.x, 0, pipeWidth, p.topHeight);
+
+                ctx.fillStyle = isNight ? "#1e5128" : "#22c55e";
+                ctx.fillRect(p.x - 5, p.topHeight - 25, pipeWidth + 10, 25);
+                ctx.strokeStyle = isNight ? "#0f3d14" : "#15803d";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x - 5, p.topHeight - 25, pipeWidth + 10, 25);
+
+                ctx.fillStyle = pipeGrad;
+                ctx.fillRect(p.x, p.bottomY, pipeWidth, HEIGHT - p.bottomY - 50);
+
+                ctx.fillStyle = isNight ? "#1e5128" : "#22c55e";
+                ctx.fillRect(p.x - 5, p.bottomY, pipeWidth + 10, 25);
+                ctx.strokeRect(p.x - 5, p.bottomY, pipeWidth + 10, 25);
+                ctx.lineWidth = 1;
+
+                ctx.fillStyle = "rgba(255,255,255,0.1)";
+                ctx.fillRect(p.x + 5, 0, 8, p.topHeight - 25);
+                ctx.fillRect(p.x + 5, p.bottomY + 25, 8, HEIGHT - p.bottomY - 75);
+            }
+        }
+
+        function drawCoins() {
+            for (const coin of coins) {
+                if (coin.collected) continue;
+
+                const coinGlow = ctx.createRadialGradient(coin.x, coin.y, 0, coin.x, coin.y, coin.radius * 2);
+                coinGlow.addColorStop(0, "rgba(255, 215, 0, 0.5)");
+                coinGlow.addColorStop(1, "rgba(255, 215, 0, 0)");
+                ctx.fillStyle = coinGlow;
+                ctx.fillRect(coin.x - coin.radius * 2, coin.y - coin.radius * 2, coin.radius * 4, coin.radius * 4);
+
+                const scaleX = Math.abs(Math.cos(coin.rotation));
+                ctx.save();
+                ctx.translate(coin.x, coin.y);
+                ctx.scale(scaleX, 1);
+
+                ctx.beginPath();
+                ctx.arc(0, 0, coin.radius, 0, Math.PI * 2);
+                const coinGrad = ctx.createLinearGradient(-coin.radius, -coin.radius, coin.radius, coin.radius);
+                coinGrad.addColorStop(0, "#ffd700");
+                coinGrad.addColorStop(0.5, "#ffeb3b");
+                coinGrad.addColorStop(1, "#ff9800");
+                ctx.fillStyle = coinGrad;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(0, 0, coin.radius - 4, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffc107";
+                ctx.fill();
+
+                ctx.fillStyle = "#ff6f00";
+                ctx.font = "bold 12px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("⚡", 0, 1);
+
+                ctx.restore();
+            }
+        }
+
+        function drawParticles() {
+            for (const p of particles) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = p.color.replace(')', `, ${p.life})`).replace('rgb', 'rgba');
+                ctx.fill();
+            }
+        }
+
+        function drawScorePopups() {
+            for (const s of scorePopups) {
+                ctx.font = `bold ${16 + (1 - s.life) * 8}px Outfit`;
+                ctx.textAlign = "center";
+                ctx.fillStyle = s.color.replace ? s.color : `rgba(255,255,255,${s.life})`;
+                ctx.globalAlpha = s.life;
+                ctx.fillText(s.text, s.x, s.y);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawHUD() {
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.roundRect(10, 10, 120, 40, 10);
+            ctx.fill();
+
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 24px Outfit";
+            ctx.textAlign = "left";
+            ctx.fillText("🏆 " + score, 20, 38);
+
+            ctx.fillStyle = "rgba(0,0,0,0.3)";
+            ctx.roundRect(WIDTH - 100, 10, 90, 28, 8);
+            ctx.fill();
+
+            ctx.font = "14px Outfit";
+            ctx.fillStyle = "#ffd700";
+            ctx.textAlign = "right";
+            ctx.fillText("Best: " + highScore, WIDTH - 15, 30);
+
+            if (powerTimer > 0) {
+                const barWidth = 100;
+                const barHeight = 8;
+                const x = (WIDTH - barWidth) / 2;
+                const y = 50;
+                const progress = powerTimer / 300;
+
+                ctx.fillStyle = "rgba(0,0,0,0.4)";
+                ctx.roundRect(x - 5, y - 5, barWidth + 10, barHeight + 10, 5);
+                ctx.fill();
+
+                const powerGrad = ctx.createLinearGradient(x, y, x + barWidth, y);
+                powerGrad.addColorStop(0, "#ffd700");
+                powerGrad.addColorStop(1, "#ff6b6b");
+                ctx.fillStyle = powerGrad;
+                ctx.roundRect(x, y, barWidth * progress, barHeight, 4);
+                ctx.fill();
+
+                ctx.font = "bold 12px Outfit";
+                ctx.textAlign = "center";
+                ctx.fillStyle = "#fff";
+                ctx.fillText("⚡ SLOW-MO ⚡", WIDTH / 2, y + 25);
+            }
+        }
+
+        function drawOverlays() {
+            if (gameState === "over") {
+                ctx.fillStyle = "rgba(0,0,0,0.7)";
+                ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+                ctx.fillStyle = "rgba(255,255,255,0.1)";
+                ctx.roundRect(WIDTH / 2 - 140, HEIGHT / 2 - 100, 280, 200, 20);
+                ctx.fill();
+
+                ctx.textAlign = "center";
+
+                ctx.font = "bold 36px Outfit";
+                ctx.fillStyle = "#ff6b6b";
+                ctx.fillText("GAME OVER", WIDTH / 2, HEIGHT / 2 - 50);
+
+                ctx.font = "24px Outfit";
+                ctx.fillStyle = "#fff";
+                ctx.fillText(`Score: ${score}`, WIDTH / 2, HEIGHT / 2);
+
+                if (score >= highScore && score > 0) {
+                    ctx.font = "18px Outfit";
+                    ctx.fillStyle = "#ffd700";
+                    ctx.fillText("🎉 NEW HIGH SCORE! 🎉", WIDTH / 2, HEIGHT / 2 + 30);
+                } else {
+                    ctx.font = "18px Outfit";
+                    ctx.fillStyle = "#aaa";
+                    ctx.fillText(`Best: ${highScore}`, WIDTH / 2, HEIGHT / 2 + 30);
+                }
+
+                ctx.font = "14px Outfit";
+                ctx.fillStyle = "#888";
+                ctx.fillText("Press SPACE or Click to restart", WIDTH / 2, HEIGHT / 2 + 70);
+            }
+        }
+
+        function draw() {
+            drawBackground();
+            drawPipes();
+            drawCoins();
+            drawParticles();
+            drawBird();
+            drawScorePopups();
+            drawHUD();
+            drawOverlays();
+            ctx.restore();
+        }
+
+        function jump() {
+            if (gameState === "playing") {
+                bird.velocity = bird.jumpStrength;
+                spawnParticles(bird.x - 10, bird.y + 10, "rgba(255,255,255,0.8)", 5);
+                AudioSystem.playJump();
+            } else if (gameState === "over") {
+                resetGame();
+                gameState = "playing";
+                AudioSystem.startMusic();
+            }
+        }
+
+        function gameOver() {
+            if (gameState !== "playing") return;
+            gameState = "over";
+            screenShake = 15;
+            spawnParticles(bird.x, bird.y, "#ff6b6b", 20);
+            AudioSystem.stopMusic();
+            AudioSystem.playGameOver();
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem("flappyUltimateHighScore", highScore.toString());
+                document.getElementById("menuHighScore").textContent = highScore;
+            }
+        }
+
+        // Polyfill for roundRect
+        if (!ctx.roundRect) {
+            ctx.roundRect = function (x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            };
+        }
+
+        // Controls
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                e.preventDefault();
+                if (gameState === "menu") return;
+                jump();
+            }
+            if (e.key === "n" || e.key === "N") {
+                toggleNight();
+            }
+            if (e.key === "m" || e.key === "M") {
+                toggleMusic();
+            }
+        });
+
+        canvas.addEventListener("mousedown", () => {
+            if (gameState === "menu") return;
+            jump();
+        });
+
+        canvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            if (gameState === "menu") return;
+            jump();
+        });
+
+        // Default selections
+        selectDifficulty("easy");
+        selectSkin("yellow");
+        initBackground();
+        update();
+    </script>
+
+</body>
+
+</html>
